@@ -1,0 +1,54 @@
+[project]
+name = "quantum-kernel-anomaly"
+version = "0.1.0"
+description = "Hybrid quantum-classical anomaly detection using parameterized quantum kernels"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "qiskit>=1.3",
+    "qiskit-aer>=0.15",
+    "qiskit-machine-learning>=0.8",
+    "numpy>=1.26",
+    "scipy>=1.14",
+    "pandas>=2.2",
+    "pyarrow>=18.0",
+    "scikit-learn>=1.6",
+    "matplotlib>=3.9",
+    "seaborn>=0.13",
+    "plotly>=5.24",
+    "pyyaml>=6.0",
+    "tqdm>=4.67",
+    "certifi>=2026.1.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.15.1",
+]

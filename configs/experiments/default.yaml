@@ -1,0 +1,25 @@
+# Default experiment configuration
+data:
+  dataset: creditcard
+  n_features: 5
+  normal_train_size: 1000
+  test_size: 500
+  seed: 42
+
+feature_map:
+  type: zz
+  n_qubits: 5
+  reps: 2
+  entanglement: linear
+
+kernel:
+  backend: statevector
+
+model:
+  type: ocsvm
+  nu: 0.05
+
+preprocessing:
+  scale: standard
+  dim_reduction: pca
+  angle_range: [0.0, 6.283185307179586]  # [0, 2*pi]

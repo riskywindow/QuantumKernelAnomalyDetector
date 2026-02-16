@@ -1,0 +1,9 @@
+# Simulator backend configuration
+backend:
+  type: statevector
+  name: aer_simulator
+  shots: null  # statevector is exact, no shots needed
+
+noise:
+  enabled: false
+  model: null
