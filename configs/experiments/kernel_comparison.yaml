@@ -29,5 +29,23 @@ experiment:
       degree: 3
       gamma: scale
 
+  models:
+    ocsvm:
+      nu: 0.05
+    kpca:
+      n_components: 10
+
+  baselines:
+    isolation_forest:
+      n_estimators: 100
+      contamination: 0.001
+    autoencoder:
+      encoding_dim: 3
+      epochs: 50
+      batch_size: 256
+    lof:
+      n_neighbors: 20
+      contamination: 0.001
+
   sampler:
     n_shots: 1024
