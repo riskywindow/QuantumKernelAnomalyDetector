@@ -362,7 +362,7 @@ Set up the complete project structure, implement data loading and preprocessing 
 - Batched job submission
 - Zero-noise extrapolation
 - PSD correction for noisy kernels
-
+1
 ### Phase 6: Dashboard & Polish
 - React + Plotly.js dashboard
 - LaTeX writeup

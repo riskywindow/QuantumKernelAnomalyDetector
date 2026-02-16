@@ -4,15 +4,38 @@
 
 ---
 
-## Project Status: ✅ Phase 3 — Complete
+## Project Status: ✅ Phase 4 — Complete
 
 ### Completed Phases
 - **Phase 1: Foundation** — Completed 2026-02-15
 - **Phase 2: Kernel Engine Expansion** — Completed 2026-02-15
 - **Phase 3: ML Pipeline & Benchmarking** — Completed 2026-02-15
+- **Phase 4: Expressibility Analysis** — Completed 2026-02-15
 
-### Current Phase: Phase 4 — Expressibility Analysis (Not Started)
-**Objective:** Effective dimension computation, kernel target alignment, geometric difference metric, synthetic advantage dataset.
+### Current Phase: Phase 5 — Hardware Execution (Not Started)
+**Objective:** IBM Quantum backend integration, batched job submission, zero-noise extrapolation, PSD correction for noisy kernels.
+
+### Phase 4 Task Checklist
+- [x] Task 4.1: Kernel Target Alignment (`src/analysis/alignment.py`)
+- [x] Task 4.2: Effective Dimension (`src/analysis/expressibility.py`)
+- [x] Task 4.3: Geometric Difference (`src/analysis/geometric.py`)
+- [x] Task 4.4: Synthetic Advantage Dataset (`src/data/synthetic.py`)
+- [x] Task 4.5: Synthetic Advantage Benchmark (`experiments/run_synthetic_benchmark.py`)
+- [x] Task 4.6: Combined Analysis Report (`experiments/run_analysis.py`)
+- [x] Task 4.7: Tests (56 new tests, 244 total, all passing)
+- [x] Task 4.8: Verification Script (`scripts/verify_phase4.py`)
+
+### Phase 4 Exit Criteria
+- [x] Kernel target alignment (centered and uncentered) computed correctly
+- [x] Effective dimension and eigenspectrum analysis work for all kernel matrices
+- [x] Geometric difference metric computes without numerical errors (with regularization)
+- [x] Synthetic advantage dataset generates balanced, labeled data using quantum kernel structure
+- [x] Synthetic benchmark shows quantum kernel outperforming classical on the synthetic data
+- [x] Combined analysis produces all three tables and three plots on real fraud data
+- [x] Correlation between KTA and Phase 3 AUROC is documented
+- [x] All new tests pass, no regressions on existing 188 tests — 244/244 total
+- [x] Verification script completes in under 90 seconds (2.1s)
+- [x] PROGRESS.md updated with analysis results
 
 ### Phase 3 Task Checklist
 - [x] Task 3.1: Metrics module (AnomalyMetrics dataclass, compute_anomaly_metrics, compute_metrics_table)
@@ -60,6 +83,74 @@
 ---
 
 ## Session Log
+
+### Session 4 — 2026-02-15
+**Phase:** 4 — Expressibility Analysis
+**Status:** COMPLETE
+
+**Accomplished:**
+- Implemented `src/analysis/alignment.py`: Kernel target alignment (KTA) and centered KTA (Cortes et al. 2012). Converts labels from {0,1} to {-1,+1}, computes Frobenius inner product with ideal kernel K_y = outer(y_pm, y_pm). Centering via H@K@H removes constant shift bias.
+- Implemented `src/analysis/expressibility.py`: Effective dimension via spectral entropy (exp(-sum(p*log(p)))), participation ratio ((sum λ)²/sum(λ²)), full eigenspectrum analysis with cumulative variance explained. Uses `eigvalsh` for numerical stability on symmetric matrices.
+- Implemented `src/analysis/geometric.py`: Geometric difference metric from Huang et al. (2021). Uses eigendecomposition-based matrix sqrt (not `scipy.linalg.sqrtm`) for numerical stability. Regularizes K_target for inversion (eps=1e-5). Bidirectional and pairwise computation supported.
+- Implemented `src/data/synthetic.py`: Quantum advantage dataset generation. Labels determined by fidelity |<psi_ref|psi(x_i)>|² with a random reference state. Median threshold for balanced labels. Configurable noise rate.
+- Created `experiments/run_synthetic_benchmark.py`: Full classification benchmark (SVC with precomputed kernels) on synthetic data. Evaluates accuracy, F1, AUROC for 4 quantum + 2 classical kernels.
+- Created `experiments/run_analysis.py`: Combined expressibility analysis on real fraud data. Three tables (expressibility, geometric difference, correlation), three plots (eigenspectra, KTA vs AUROC, geometric heatmap). Loads Phase 3 AUROC for correlation analysis.
+- Created `scripts/verify_phase4.py`: Quick verification (2.1s) of all components.
+- Wrote 56 new tests across 4 test files (test_alignment, test_expressibility, test_geometric, test_synthetic).
+
+**Synthetic Benchmark Results (ZZ-generated labels, 150 train, 100 test, 4 qubits):**
+| Kernel | Accuracy | F1 | AUROC | Centered KTA |
+|--------|----------|-----|-------|-------------|
+| ZZ (generating kernel) | 0.690 | 0.699 | 0.773 | 0.116 |
+| Covariant | 0.520 | 0.564 | 0.568 | 0.067 |
+| RBF | 0.520 | 0.529 | 0.461 | 0.052 |
+| Polynomial | 0.480 | 0.490 | 0.442 | 0.039 |
+| HW-Efficient | 0.460 | 0.481 | 0.415 | 0.060 |
+| IQP | 0.430 | 0.457 | 0.481 | 0.062 |
+
+**Expressibility Analysis (Credit Card Fraud, 100 test samples, 5 qubits):**
+| Kernel | Eff. Dimension | Participation Ratio | KTA (centered) | Phase 3 AUROC |
+|--------|---------------|--------------------|--------------------|------------|
+| ZZ | 55.67 | 33.62 | 0.0906 | 0.8744 |
+| IQP | 62.53 | 42.34 | 0.0907 | 0.8178 |
+| Covariant | 15.35 | 7.16 | 0.1035 | 0.8756 |
+| HW-Efficient | 12.17 | 5.66 | 0.1099 | 0.8978 |
+| RBF | 2.57 | 1.62 | 0.0959 | 0.9078 |
+
+**Geometric Differences vs RBF (Credit Card Fraud):**
+| Kernel | g(K_Q, K_RBF) | g(K_RBF, K_Q) | Advantage Ratio |
+|--------|--------------|---------------|----------------|
+| ZZ | 3.63 | 339.85 | 0.011 |
+| IQP | 3.75 | 392.59 | 0.010 |
+| Covariant | 2.48 | 95.34 | 0.026 |
+| HW-Efficient | 3.29 | 72.74 | 0.045 |
+
+**Correlation Analysis:**
+| Metric Pair | Pearson r | p-value |
+|-------------|-----------|---------|
+| KTA vs AUROC | 0.534 | 0.354 |
+| Eff. Dimension vs AUROC | -0.835 | 0.078 |
+| Geometric Diff vs AUROC (quantum only) | -0.460 | 0.540 |
+
+**Key Findings:**
+1. **Synthetic benchmark confirms quantum advantage by construction:** ZZ kernel (the generating kernel) achieves 69% accuracy vs 52% for RBF — a clear 17pp gap demonstrating that the quantum kernel captures structure classical kernels miss when labels are quantum-determined.
+2. **On real fraud data, no quantum advantage:** g(K_RBF, K_Q) >> g(K_Q, K_RBF) for ALL quantum kernels, meaning the classical RBF kernel captures significantly more predictive structure than quantum kernels on this dataset. This is consistent with Phase 3's finding that RBF OCSVM slightly outperforms quantum OCSVM.
+3. **Higher expressibility ≠ higher performance:** ZZ/IQP have the highest effective dimensions (56-63) but NOT the best AUROC. HW-Efficient has lower dimensionality (12) but better AUROC (0.90). Negative correlation r=-0.835 (p=0.078) suggests that overly expressive kernels overfit on this dataset.
+4. **KTA positively but weakly correlated with AUROC:** r=0.534 but not significant (p=0.354) with only 5 data points. HW-Efficient has highest KTA (0.110) matching its best quantum AUROC.
+5. **Quantum kernels and classical kernels operate in fundamentally different regimes:** Quantum kernel matrices are very sparse (mean off-diagonal ~0.05-0.18) while RBF is denser (mean ~0.41). This explains the large geometric differences in both directions.
+
+**Decisions Made:**
+- Used eigendecomposition for matrix sqrt (not `scipy.linalg.sqrtm`) to avoid complex-valued results from nearly-PSD matrices
+- Regularization eps=1e-5 for geometric difference — prevents NaN/inf from singular quantum kernel matrices
+- Median fidelity threshold for synthetic dataset — ensures approximately balanced labels
+- ZZ with reps=2 used to generate synthetic labels — strongest entanglement structure for demonstrating advantage
+- SVC (not One-Class SVM) for synthetic benchmark — it's a classification problem with labeled training data
+
+**Issues Encountered:**
+- Previous session crashed, leaving all files in place. Verified everything works by running tests (244 pass), verification script (2.1s), synthetic benchmark (77.5s), and analysis (18.6s) — all successful.
+
+**Next Steps:**
+- Phase 5: IBM Quantum hardware execution — backend integration, batched job submission, zero-noise extrapolation, PSD correction
 
 ### Session 3 — 2026-02-15
 **Phase:** 3 — ML Pipeline & Benchmarking
@@ -251,5 +342,14 @@
 | `scripts/verify_phase2.py` | ✅ Complete | Phase 2 verification: 6 kernels + shot noise analysis |
 | `scripts/verify_phase3.py` | ✅ Complete | Phase 3 verification: ML pipeline (3.6s) |
 | `tests/*` | ✅ Complete | 188 tests, all passing |
-| `src/analysis/*` | ⬜ Phase 4-5 | Expressibility, noise analysis |
+| `src/analysis/alignment.py` | ✅ Complete | KTA and centered KTA (Cristianini et al.) |
+| `src/analysis/expressibility.py` | ✅ Complete | Effective dimension, participation ratio, eigenspectrum |
+| `src/analysis/geometric.py` | ✅ Complete | Geometric difference metric (Huang et al.) |
+| `src/data/synthetic.py` | ✅ Complete | Quantum advantage dataset generation |
+| `experiments/run_synthetic_benchmark.py` | ✅ Complete | Synthetic classification benchmark |
+| `experiments/run_analysis.py` | ✅ Complete | Full expressibility analysis on fraud data |
+| `scripts/verify_phase4.py` | ✅ Complete | Phase 4 verification (2.1s) |
+| `tests/test_analysis/*` | ✅ Complete | 56 tests for alignment, expressibility, geometric, synthetic |
+| `src/analysis/noise.py` | ⬜ Phase 5 | Noise impact study |
+| `src/analysis/psd_correction.py` | ⬜ Phase 5 | Kernel matrix PSD projection |
 | `src/hardware/*` | ⬜ Phase 5 | IBM Quantum integration |
