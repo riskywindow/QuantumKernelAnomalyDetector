@@ -1,0 +1,154 @@
+{
+  "models": [
+    {
+      "name": "Isolation Forest",
+      "kernel_type": "baseline",
+      "auroc": 0.9144,
+      "auprc": 0.6988,
+      "f1": 0.625,
+      "precision": 0.8333,
+      "recall": 0.5,
+      "fpr_at_95_recall": 0.4778
+    },
+    {
+      "name": "OCSVM (RBF)",
+      "kernel_type": "classical",
+      "auroc": 0.9078,
+      "auprc": 0.6707,
+      "f1": 0.6667,
+      "precision": 0.6364,
+      "recall": 0.7,
+      "fpr_at_95_recall": 0.4222
+    },
+    {
+      "name": "OCSVM (HW-Efficient)",
+      "kernel_type": "quantum",
+      "auroc": 0.8978,
+      "auprc": 0.6687,
+      "f1": 0.7619,
+      "precision": 0.7273,
+      "recall": 0.8,
+      "fpr_at_95_recall": 0.5778
+    },
+    {
+      "name": "LOF",
+      "kernel_type": "baseline",
+      "auroc": 0.8967,
+      "auprc": 0.7208,
+      "f1": 0.7059,
+      "precision": 0.8571,
+      "recall": 0.6,
+      "fpr_at_95_recall": 0.5556
+    },
+    {
+      "name": "OCSVM (Covariant)",
+      "kernel_type": "quantum",
+      "auroc": 0.8756,
+      "auprc": 0.656,
+      "f1": 0.6957,
+      "precision": 0.6154,
+      "recall": 0.8,
+      "fpr_at_95_recall": 0.5333
+    },
+    {
+      "name": "OCSVM (ZZ)",
+      "kernel_type": "quantum",
+      "auroc": 0.8744,
+      "auprc": 0.4219,
+      "f1": 0.4848,
+      "precision": 0.3478,
+      "recall": 0.8,
+      "fpr_at_95_recall": 0.3556
+    },
+    {
+      "name": "KPCA (IQP)",
+      "kernel_type": "quantum_kpca",
+      "auroc": 0.8733,
+      "auprc": 0.5129,
+      "f1": 0.5714,
+      "precision": 0.4444,
+      "recall": 0.8,
+      "fpr_at_95_recall": 0.4667
+    },
+    {
+      "name": "KPCA (ZZ)",
+      "kernel_type": "quantum_kpca",
+      "auroc": 0.8689,
+      "auprc": 0.4658,
+      "f1": 0.5455,
+      "precision": 0.5,
+      "recall": 0.6,
+      "fpr_at_95_recall": 0.4556
+    },
+    {
+      "name": "OCSVM (IQP)",
+      "kernel_type": "quantum",
+      "auroc": 0.8178,
+      "auprc": 0.5196,
+      "f1": 0.5714,
+      "precision": 0.5455,
+      "recall": 0.6,
+      "fpr_at_95_recall": 0.7889
+    },
+    {
+      "name": "KPCA (Covariant)",
+      "kernel_type": "quantum_kpca",
+      "auroc": 0.7944,
+      "auprc": 0.7101,
+      "f1": 0.75,
+      "precision": 1.0,
+      "recall": 0.6,
+      "fpr_at_95_recall": 0.8778
+    },
+    {
+      "name": "KPCA (HW-Efficient)",
+      "kernel_type": "quantum_kpca",
+      "auroc": 0.78,
+      "auprc": 0.6679,
+      "f1": 0.6667,
+      "precision": 0.6364,
+      "recall": 0.7,
+      "fpr_at_95_recall": 0.8778
+    },
+    {
+      "name": "OCSVM (Polynomial)",
+      "kernel_type": "classical",
+      "auroc": 0.5544,
+      "auprc": 0.3123,
+      "f1": 0.375,
+      "precision": 0.5,
+      "recall": 0.3,
+      "fpr_at_95_recall": 0.9222
+    },
+    {
+      "name": "Autoencoder",
+      "kernel_type": "baseline",
+      "auroc": 0.5411,
+      "auprc": 0.1736,
+      "f1": 0.303,
+      "precision": 0.2174,
+      "recall": 0.5,
+      "fpr_at_95_recall": 1.0
+    },
+    {
+      "name": "KPCA (RBF)",
+      "kernel_type": "classical_kpca",
+      "auroc": 0.1678,
+      "auprc": 0.0636,
+      "f1": 0.1835,
+      "precision": 0.101,
+      "recall": 1.0,
+      "fpr_at_95_recall": 0.9889
+    },
+    {
+      "name": "KPCA (Polynomial)",
+      "kernel_type": "classical_kpca",
+      "auroc": 0.1289,
+      "auprc": 0.0615,
+      "f1": 0.1835,
+      "precision": 0.101,
+      "recall": 1.0,
+      "fpr_at_95_recall": 0.9889
+    }
+  ]
+}

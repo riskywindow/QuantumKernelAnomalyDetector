@@ -7,6 +7,7 @@ All models in the project are evaluated through this single interface.
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -65,14 +66,20 @@ def compute_anomaly_metrics(
     auprc = float(average_precision_score(y_true, scores))
 
     # F1 / precision / recall at optimal threshold
-    precisions, recalls, thresholds = precision_recall_curve(y_true, scores)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", category=RuntimeWarning, message="invalid value"
+        )
+        precisions, recalls, thresholds = precision_recall_curve(y_true, scores)
     # precision_recall_curve returns n+1 precisions/recalls but n thresholds
     # Last precision=1, recall=0 is a sentinel — exclude it for F1 computation
     precisions_t = precisions[:-1]
     recalls_t = recalls[:-1]
+    denom = precisions_t + recalls_t
+    denom_safe = np.where(denom > 0, denom, 1.0)
     f1_scores = np.where(
-        (precisions_t + recalls_t) > 0,
-        2 * precisions_t * recalls_t / (precisions_t + recalls_t),
+        denom > 0,
+        2 * precisions_t * recalls_t / denom_safe,
         0.0,
     )
     best_idx = int(np.argmax(f1_scores))

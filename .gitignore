@@ -1,6 +1,11 @@
 # Data
 data/raw/
-experiments/results/
+
+# Experiment results (large files)
+experiments/results/*.npy
+experiments/results/*.csv
+experiments/results/*.png
+experiments/results/kernels/
 
 # Python
 __pycache__/
@@ -43,3 +48,6 @@ htmlcov/
 
 # ruff
 .ruff_cache/
+
+# Node (dashboard)
+node_modules/

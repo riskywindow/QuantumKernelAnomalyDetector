@@ -20,6 +20,7 @@ dependencies = [
     "tqdm>=4.67",
     "certifi>=2026.1.4",
     "torch>=2.10.0",
+    "qiskit-ibm-runtime>=0.45.1",
 ]
 
 [project.optional-dependencies]

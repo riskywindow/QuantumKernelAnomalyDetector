@@ -1,0 +1,88 @@
+{
+  "noise_sweep": [
+    {
+      "single_qubit_error": 0.0001,
+      "frobenius_error": 0.0219,
+      "mae": 0.0067,
+      "correlation": 0.9998,
+      "diagonal_error": 0.0187
+    },
+    {
+      "single_qubit_error": 0.000199,
+      "frobenius_error": 0.0368,
+      "mae": 0.0113,
+      "correlation": 0.9998,
+      "diagonal_error": 0.0361
+    },
+    {
+      "single_qubit_error": 0.000398,
+      "frobenius_error": 0.07,
+      "mae": 0.0207,
+      "correlation": 0.9997,
+      "diagonal_error": 0.0727
+    },
+    {
+      "single_qubit_error": 0.000794,
+      "frobenius_error": 0.1309,
+      "mae": 0.0387,
+      "correlation": 0.9996,
+      "diagonal_error": 0.1377
+    },
+    {
+      "single_qubit_error": 0.001583,
+      "frobenius_error": 0.243,
+      "mae": 0.0721,
+      "correlation": 0.9994,
+      "diagonal_error": 0.254
+    },
+    {
+      "single_qubit_error": 0.003158,
+      "frobenius_error": 0.4191,
+      "mae": 0.1246,
+      "correlation": 0.9986,
+      "diagonal_error": 0.4386
+    },
+    {
+      "single_qubit_error": 0.0063,
+      "frobenius_error": 0.6483,
+      "mae": 0.1932,
+      "correlation": 0.9948,
+      "diagonal_error": 0.6762
+    },
+    {
+      "single_qubit_error": 0.012566,
+      "frobenius_error": 0.845,
+      "mae": 0.253,
+      "correlation": 0.9715,
+      "diagonal_error": 0.8729
+    },
+    {
+      "single_qubit_error": 0.025066,
+      "frobenius_error": 0.9317,
+      "mae": 0.2811,
+      "correlation": 0.6766,
+      "diagonal_error": 0.9547
+    },
+    {
+      "single_qubit_error": 0.05,
+      "frobenius_error": 0.947,
+      "mae": 0.2868,
+      "correlation": 0.1108,
+      "diagonal_error": 0.9686
+    }
+  ],
+  "zne": {
+    "noisy": {
+      "frobenius_error": 0.3919,
+      "mae": 0.1162,
+      "correlation": 0.9988
+    },
+    "corrected": {
+      "frobenius_error": 0.2418,
+      "mae": 0.071,
+      "correlation": 0.9989
+    },
+    "improvement_pct": 38.3
+  },
+  "noise_tolerance_threshold": 0.006
+}

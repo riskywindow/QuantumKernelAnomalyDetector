@@ -1,7 +1,8 @@
 """Quantum kernel computation using parameterized feature maps.
 
 Computes kernel entries as K(x1, x2) = |⟨0...0|U†(x2) U(x1)|0...0⟩|²
-using either exact statevector simulation or shot-based sampling.
+using either exact statevector simulation or shot-based sampling,
+with optional noise model support.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import numpy as np
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Statevector
+from qiskit_aer.noise import NoiseModel
 from tqdm import tqdm
 
 from src.kernels.base import BaseKernel
@@ -30,6 +32,9 @@ class QuantumKernel(BaseKernel):
             'sampler' for shot-based estimation.
         n_shots: Number of measurement shots for sampler backend.
             Ignored when backend='statevector'.
+        noise_model: Optional Qiskit noise model for noisy simulation.
+            When provided with backend='sampler', uses AerSimulator with
+            this noise model. Ignored when backend='statevector'.
     """
 
     def __init__(
@@ -37,6 +42,7 @@ class QuantumKernel(BaseKernel):
         feature_map: BaseFeatureMap,
         backend: str = "statevector",
         n_shots: int = 1024,
+        noise_model: NoiseModel | None = None,
     ) -> None:
         if backend not in ("statevector", "sampler"):
             raise ValueError(
@@ -46,14 +52,16 @@ class QuantumKernel(BaseKernel):
         self.feature_map = feature_map
         self.backend = backend
         self.n_shots = n_shots
+        self.noise_model = noise_model
 
     @property
     def name(self) -> str:
         """Human-readable name of the kernel."""
         if self.backend == "sampler":
+            noise_str = ", noisy" if self.noise_model is not None else ""
             return (
                 f"QuantumKernel({self.feature_map.name}, "
-                f"{self.backend}, {self.n_shots}shots)"
+                f"{self.backend}, {self.n_shots}shots{noise_str})"
             )
         return f"QuantumKernel({self.feature_map.name}, {self.backend})"
 
@@ -116,8 +124,11 @@ class QuantumKernel(BaseKernel):
         meas_circuit.compose(kernel_circuit, inplace=True)
         meas_circuit.measure(range(n_qubits), range(n_qubits))
 
-        # Transpile and run
-        sim = AerSimulator()
+        # Transpile and run (with optional noise model)
+        if self.noise_model is not None:
+            sim = AerSimulator(noise_model=self.noise_model)
+        else:
+            sim = AerSimulator()
         pm = generate_preset_pass_manager(optimization_level=0, backend=sim)
         transpiled = pm.run(meas_circuit)
         result = sim.run(transpiled, shots=self.n_shots).result()

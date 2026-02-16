@@ -1,0 +1,46 @@
+{
+  "results": [
+    {
+      "kernel": "ZZ",
+      "accuracy": 0.69,
+      "f1": 0.699,
+      "auroc": 0.773,
+      "kta": 0.1156
+    },
+    {
+      "kernel": "Covariant",
+      "accuracy": 0.52,
+      "f1": 0.564,
+      "auroc": 0.568,
+      "kta": 0.0667
+    },
+    {
+      "kernel": "RBF",
+      "accuracy": 0.52,
+      "f1": 0.529,
+      "auroc": 0.461,
+      "kta": 0.0522
+    },
+    {
+      "kernel": "Polynomial",
+      "accuracy": 0.48,
+      "f1": 0.49,
+      "auroc": 0.442,
+      "kta": 0.0393
+    },
+    {
+      "kernel": "HW-Efficient",
+      "accuracy": 0.46,
+      "f1": 0.481,
+      "auroc": 0.415,
+      "kta": 0.06
+    },
+    {
+      "kernel": "IQP",
+      "accuracy": 0.43,
+      "f1": 0.457,
+      "auroc": 0.481,
+      "kta": 0.0617
+    }
+  ]
+}

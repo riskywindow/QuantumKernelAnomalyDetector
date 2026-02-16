@@ -1,0 +1,27 @@
+noise_sweep:
+  n_levels: 10
+  min_error: 0.0001
+  max_error: 0.05
+
+hardware:
+  backend_name: ibm_brisbane
+  shots: 4096
+  optimization_level: 1
+
+kernel:
+  feature_map: hardware_efficient
+  n_qubits: 5
+  reps: 2
+
+data:
+  n_samples: 30
+  n_features: 5
+  seed: 42
+
+zne:
+  scale_factors: [1.0, 1.5, 2.0, 2.5, 3.0]
+  extrapolation: linear
+  base_noise:
+    single_qubit_error: 0.005
+    two_qubit_error: 0.02
+    readout_error: 0.01
