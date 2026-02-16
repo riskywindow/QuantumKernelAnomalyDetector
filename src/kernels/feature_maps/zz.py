@@ -16,8 +16,10 @@ from __future__ import annotations
 import numpy as np
 from qiskit.circuit import QuantumCircuit
 
+from src.kernels.feature_maps.base import BaseFeatureMap
 
-class ZZFeatureMap:
+
+class ZZFeatureMap(BaseFeatureMap):
     """ZZ feature map circuit for quantum kernel methods.
 
     Encodes a classical data point x into a quantum state |ψ(x)⟩ using
@@ -44,10 +46,25 @@ class ZZFeatureMap:
         if entanglement not in ("linear", "full"):
             raise ValueError(f"entanglement must be 'linear' or 'full', got {entanglement!r}")
 
-        self.n_qubits = n_qubits
-        self.reps = reps
+        self._n_qubits = n_qubits
+        self._reps = reps
         self.entanglement = entanglement
         self._entangling_pairs = self._get_entangling_pairs()
+
+    @property
+    def n_qubits(self) -> int:
+        """Number of qubits in the feature map circuit."""
+        return self._n_qubits
+
+    @property
+    def name(self) -> str:
+        """Human-readable name of the feature map."""
+        return f"ZZ({self._n_qubits}q, {self._reps}reps, {self.entanglement})"
+
+    @property
+    def reps(self) -> int:
+        """Number of circuit repetitions."""
+        return self._reps
 
     def _get_entangling_pairs(self) -> list[tuple[int, int]]:
         """Get the list of qubit pairs for entangling gates.
@@ -56,9 +73,9 @@ class ZZFeatureMap:
             List of (control, target) pairs.
         """
         if self.entanglement == "linear":
-            return [(i, i + 1) for i in range(self.n_qubits - 1)]
+            return [(i, i + 1) for i in range(self._n_qubits - 1)]
         else:  # full
-            return [(i, j) for i in range(self.n_qubits) for j in range(i + 1, self.n_qubits)]
+            return [(i, j) for i in range(self._n_qubits) for j in range(i + 1, self._n_qubits)]
 
     def build_circuit(self, x: np.ndarray) -> QuantumCircuit:
         """Build the feature map circuit for a given data point.
@@ -76,21 +93,17 @@ class ZZFeatureMap:
         Raises:
             ValueError: If x has wrong dimension.
         """
-        x = np.asarray(x, dtype=np.float64)
-        if x.shape != (self.n_qubits,):
-            raise ValueError(
-                f"Expected data point of shape ({self.n_qubits},), got {x.shape}"
-            )
+        x = self._validate_input(x)
 
-        qc = QuantumCircuit(self.n_qubits)
+        qc = QuantumCircuit(self._n_qubits)
 
-        for _ in range(self.reps):
+        for _ in range(self._reps):
             # Layer 1: Hadamard on all qubits
-            for q in range(self.n_qubits):
+            for q in range(self._n_qubits):
                 qc.h(q)
 
             # Layer 2: Single-qubit phase rotations P(2*x_i)
-            for q in range(self.n_qubits):
+            for q in range(self._n_qubits):
                 qc.p(2 * x[q], q)
 
             # Layer 3: Two-qubit ZZ entangling gates
@@ -106,7 +119,7 @@ class ZZFeatureMap:
     @property
     def num_parameters_per_rep(self) -> int:
         """Number of parameterized gates per repetition."""
-        n_single = self.n_qubits  # P gates
+        n_single = self._n_qubits  # P gates
         n_entangling = len(self._entangling_pairs)  # ZZ gates
         return n_single + n_entangling
 
@@ -118,8 +131,8 @@ class ZZFeatureMap:
         """
         n_pairs = len(self._entangling_pairs)
         per_rep = (
-            self.n_qubits  # H gates
-            + self.n_qubits  # P(2*x_i) gates
+            self._n_qubits  # H gates
+            + self._n_qubits  # P(2*x_i) gates
             + n_pairs * 3  # CX + P + CX per pair
         )
-        return per_rep * self.reps
+        return per_rep * self._reps

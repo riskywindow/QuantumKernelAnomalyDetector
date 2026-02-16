@@ -1,17 +1,18 @@
 """Quantum kernel computation using parameterized feature maps.
 
 Computes kernel entries as K(x1, x2) = |⟨0...0|U†(x2) U(x1)|0...0⟩|²
-using statevector simulation for exact results.
+using either exact statevector simulation or shot-based sampling.
 """
 
 from __future__ import annotations
 
 import numpy as np
+from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 from tqdm import tqdm
 
 from src.kernels.base import BaseKernel
-from src.kernels.feature_maps.zz import ZZFeatureMap
+from src.kernels.feature_maps.base import BaseFeatureMap
 
 
 class QuantumKernel(BaseKernel):
@@ -24,34 +25,114 @@ class QuantumKernel(BaseKernel):
     the circuit U†(x2) U(x1) to the |0...0⟩ state.
 
     Args:
-        feature_map: Feature map circuit builder (e.g., ZZFeatureMap).
-        backend: Simulation backend. Currently only 'statevector' is supported.
+        feature_map: Feature map circuit builder (any BaseFeatureMap subclass).
+        backend: Simulation backend. 'statevector' for exact simulation,
+            'sampler' for shot-based estimation.
+        n_shots: Number of measurement shots for sampler backend.
+            Ignored when backend='statevector'.
     """
 
     def __init__(
         self,
-        feature_map: ZZFeatureMap,
+        feature_map: BaseFeatureMap,
         backend: str = "statevector",
+        n_shots: int = 1024,
     ) -> None:
-        if backend != "statevector":
-            raise ValueError(f"Unsupported backend: {backend!r}. Use 'statevector'.")
+        if backend not in ("statevector", "sampler"):
+            raise ValueError(
+                f"Unsupported backend: {backend!r}. Use 'statevector' or 'sampler'."
+            )
 
         self.feature_map = feature_map
         self.backend = backend
+        self.n_shots = n_shots
 
     @property
     def name(self) -> str:
         """Human-readable name of the kernel."""
-        return (
-            f"QuantumKernel(ZZ, {self.feature_map.n_qubits}q, "
-            f"{self.feature_map.reps}reps, {self.backend})"
-        )
+        if self.backend == "sampler":
+            return (
+                f"QuantumKernel({self.feature_map.name}, "
+                f"{self.backend}, {self.n_shots}shots)"
+            )
+        return f"QuantumKernel({self.feature_map.name}, {self.backend})"
+
+    def _build_kernel_circuit(
+        self, x1: np.ndarray, x2: np.ndarray
+    ) -> QuantumCircuit:
+        """Build the kernel circuit U†(x2) U(x1).
+
+        Args:
+            x1: First data point.
+            x2: Second data point.
+
+        Returns:
+            The kernel evaluation circuit.
+        """
+        circuit_x1 = self.feature_map.build_circuit(x1)
+        circuit_x2_dag = self.feature_map.build_circuit(x2).inverse()
+        return circuit_x1.compose(circuit_x2_dag)
+
+    def _compute_entry_statevector(
+        self, x1: np.ndarray, x2: np.ndarray
+    ) -> float:
+        """Compute kernel entry using exact statevector simulation.
+
+        Args:
+            x1: First data point.
+            x2: Second data point.
+
+        Returns:
+            Exact kernel value |⟨ψ(x1)|ψ(x2)⟩|².
+        """
+        kernel_circuit = self._build_kernel_circuit(x1, x2)
+        sv = Statevector.from_instruction(kernel_circuit)
+        prob_zero = abs(sv.data[0]) ** 2
+        return float(prob_zero)
+
+    def _compute_entry_sampler(
+        self, x1: np.ndarray, x2: np.ndarray
+    ) -> float:
+        """Compute kernel entry using shot-based sampling.
+
+        Adds measurement gates to all qubits and uses AerSimulator
+        to estimate the |0...0⟩ probability from finite shots.
+
+        Args:
+            x1: First data point.
+            x2: Second data point.
+
+        Returns:
+            Estimated kernel value from shot statistics.
+        """
+        from qiskit_aer import AerSimulator
+        from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+
+        kernel_circuit = self._build_kernel_circuit(x1, x2)
+
+        # Add measurements for sampler
+        n_qubits = self.feature_map.n_qubits
+        meas_circuit = QuantumCircuit(n_qubits, n_qubits)
+        meas_circuit.compose(kernel_circuit, inplace=True)
+        meas_circuit.measure(range(n_qubits), range(n_qubits))
+
+        # Transpile and run
+        sim = AerSimulator()
+        pm = generate_preset_pass_manager(optimization_level=0, backend=sim)
+        transpiled = pm.run(meas_circuit)
+        result = sim.run(transpiled, shots=self.n_shots).result()
+        counts = result.get_counts()
+
+        # Extract probability of all-zeros bitstring
+        zero_key = "0" * n_qubits
+        zero_count = counts.get(zero_key, 0)
+        return float(zero_count / self.n_shots)
 
     def compute_entry(self, x1: np.ndarray, x2: np.ndarray) -> float:
         """Compute a single kernel entry K(x1, x2).
 
         Builds the circuit U(x1) followed by U†(x2), then computes the
-        probability of measuring |0...0⟩ using statevector simulation.
+        probability of measuring |0...0⟩ using the configured backend.
 
         Args:
             x1: First data point, shape (n_features,).
@@ -63,22 +144,10 @@ class QuantumKernel(BaseKernel):
         x1 = np.asarray(x1, dtype=np.float64)
         x2 = np.asarray(x2, dtype=np.float64)
 
-        # Build U(x1)
-        circuit_x1 = self.feature_map.build_circuit(x1)
-
-        # Build U†(x2) = inverse of U(x2)
-        circuit_x2_dag = self.feature_map.build_circuit(x2).inverse()
-
-        # Full circuit: U†(x2) @ U(x1)
-        n_qubits = self.feature_map.n_qubits
-        kernel_circuit = circuit_x1.compose(circuit_x2_dag)
-
-        # Get statevector and extract |0...0⟩ probability
-        sv = Statevector.from_instruction(kernel_circuit)
-        # Probability of |0...0⟩ state (index 0)
-        prob_zero = abs(sv.data[0]) ** 2
-
-        return float(prob_zero)
+        if self.backend == "statevector":
+            return self._compute_entry_statevector(x1, x2)
+        else:
+            return self._compute_entry_sampler(x1, x2)
 
     def compute_matrix(
         self,

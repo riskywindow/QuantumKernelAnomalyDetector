@@ -1,0 +1,33 @@
+# Kernel comparison experiment configuration
+# Compares all quantum and classical kernels on credit card fraud data
+
+experiment:
+  name: kernel_comparison
+  seed: 42
+
+  data:
+    n_features: 5        # PCA dimensions = qubit count
+    n_train_samples: 200  # Normal samples for training
+    n_test_samples: 100   # Mixed test samples (stratified)
+
+  quantum_kernels:
+    - type: zz
+      reps: 2
+      entanglement: linear
+    - type: iqp
+      reps: 2
+      entanglement: linear
+    - type: covariant
+      reps: 2
+    - type: hardware_efficient
+      reps: 2
+
+  classical_kernels:
+    - type: rbf
+      gamma: scale
+    - type: polynomial
+      degree: 3
+      gamma: scale
+
+  sampler:
+    n_shots: 1024
